@@ -325,6 +325,13 @@ body.zoom-mode .hobbies-list li:not(.zoomed) {
     z-index: 1000;
 }
 
+/* Hide keyboard instructions on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .keyboard-instructions {
+        display: none;
+    }
+}
+
 /* Ensure full height on all devices */
 html {
     height: 100%;
