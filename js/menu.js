@@ -233,12 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     musicToggle.title = 'Toggle Music';
     document.body.appendChild(musicToggle);
     
-    // Add keyboard navigation instructions
-    const instructions = document.createElement('div');
-    instructions.classList.add('keyboard-instructions');
-    instructions.innerHTML = '⌨️ Use ↑↓ or W/S to navigate, Enter to select';
-    document.body.appendChild(instructions);
-    
     musicToggle.addEventListener('click', () => {
         musicToggle.innerHTML = AudioManager.toggleMusic();
         AudioManager.musicPlaying = !AudioManager.musicPlaying;
@@ -262,11 +256,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 backButton.click();
             }
         });
-        
-        // Add instructions for pages
-        const pageInstructions = document.createElement('div');
-        pageInstructions.classList.add('keyboard-instructions');
-        pageInstructions.innerHTML = '⌨️ Press Escape or Backspace to return to menu';
-        document.body.appendChild(pageInstructions);
     }
 });

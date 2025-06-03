@@ -3,8 +3,10 @@
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
-	padding: 40px 60px;
+	padding: 20px 60px;
 	z-index: 2;
+	max-height: 60vh;
+	overflow-y: auto;
 }
 
 .menu-option {
@@ -84,12 +86,38 @@
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
     .menu {
-        padding: 30px 40px;
+        padding: 15px 40px;
+        gap: 10px;
     }
 }
 
 @media (max-width: 480px) {
     .menu {
-        padding: 20px 30px;
+        padding: 10px 30px;
+        gap: 8px;
+    }
+    
+    .menu-option {
+        margin: 10px;
+        padding: 12px 25px;
+        font-size: 20px;
+    }
+    
+    .back-button {
+        padding: 12px 25px;
+        font-size: 20px;
+    }
+}
+
+@media (max-height: 600px) {
+    .menu {
+        padding: 10px 40px;
+        gap: 8px;
+    }
+    
+    .menu-option {
+        margin: 8px;
+        padding: 10px 20px;
+        font-size: 20px;
     }
 }
