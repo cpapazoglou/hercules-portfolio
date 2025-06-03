@@ -14,6 +14,7 @@ A heroic arcade-themed portfolio website inspired by the legendary Hercules and 
 ## Structure
 
 ```
+docs/                       # GitHub Pages source
 ├── index.html              # Main portfolio page
 ├── css/
 │   ├── main.css            # Base styles
@@ -38,6 +39,7 @@ A heroic arcade-themed portfolio website inspired by the legendary Hercules and 
 1. **GitHub Pages**: Visit https://cpapazoglou.github.io/hercules-portfolio
 2. **Local Development**:
    ```bash
+   cd docs
    python -m http.server 8000
    # or
    npx live-server
