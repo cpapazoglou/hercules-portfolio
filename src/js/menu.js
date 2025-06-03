@@ -113,6 +113,109 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize audio system
     AudioManager.init();
 
+    // Variables for list item navigation
+    let listItems = [];
+    let listNavigationActive = false;
+    let currentListIndex = -1;
+    let isZoomed = false;
+
+    // Initialize list items if on content pages
+    function initializeListItems() {
+        const lists = document.querySelectorAll('.experience-list, .education-list, .hobbies-list');
+        listItems = [];
+        lists.forEach(list => {
+            const items = list.querySelectorAll('li');
+            items.forEach((item, index) => {
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('data-list-index', listItems.length);
+                listItems.push(item);
+                
+                // Add click handler for list items
+                item.addEventListener('click', () => {
+                    if (!isZoomed) {
+                        selectListItem(listItems.indexOf(item));
+                        zoomListItem();
+                    } else {
+                        exitZoomMode();
+                    }
+                });
+            });
+        });
+    }
+
+    // Select a list item
+    function selectListItem(index) {
+        // Clear previous selection
+        listItems.forEach(item => item.classList.remove('keyboard-selected'));
+        
+        if (index >= 0 && index < listItems.length) {
+            currentListIndex = index;
+            listItems[currentListIndex].classList.add('keyboard-selected');
+            listNavigationActive = true;
+            
+            // Scroll item into view if needed
+            listItems[currentListIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            AudioManager.playNavigationSound();
+        }
+    }
+
+    // Zoom into selected list item
+    function zoomListItem() {
+        if (currentListIndex >= 0 && !isZoomed) {
+            const selectedItem = listItems[currentListIndex];
+            
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.classList.add('zoom-overlay');
+            document.body.appendChild(overlay);
+            
+            // Add zoom class and mode
+            selectedItem.classList.add('zoomed');
+            document.body.classList.add('zoom-mode');
+            overlay.classList.add('active');
+            isZoomed = true;
+            
+            AudioManager.playSelectSound();
+            
+            // Add click handler to overlay to exit zoom
+            overlay.addEventListener('click', exitZoomMode);
+        }
+    }
+
+    // Exit zoom mode
+    function exitZoomMode() {
+        if (isZoomed) {
+            const zoomedItem = document.querySelector('.zoomed');
+            const overlay = document.querySelector('.zoom-overlay');
+            
+            if (zoomedItem) {
+                zoomedItem.classList.remove('zoomed');
+            }
+            
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 300);
+            }
+            
+            document.body.classList.remove('zoom-mode');
+            isZoomed = false;
+            
+            // Clear list navigation state so next escape goes back to menu
+            listItems.forEach(item => item.classList.remove('keyboard-selected'));
+            listNavigationActive = false;
+            currentListIndex = -1;
+            
+            AudioManager.playNavigationSound();
+        }
+    }
+
+    // Initialize list items on content pages
+    initializeListItems();
+
     // Navigate to selected option
     menuOptions.forEach((option, index) => {
         option.addEventListener('click', (e) => {
@@ -181,48 +284,152 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
-        // Get current navigable elements (including back button if on content page)
-        const currentBackButton = document.querySelector('.back-button');
-        const contactButtons = document.querySelectorAll('.contact-button');
-        const navigableElements = [...menuOptions];
-        if (currentBackButton) {
-            navigableElements.push(currentBackButton);
+        // Handle zoom mode first
+        if (isZoomed) {
+            switch(e.key) {
+                case 'Escape':
+                case 'Backspace':
+                case 'q':
+                case 'Q':
+                    e.preventDefault();
+                    exitZoomMode();
+                    break;
+            }
+            return; // Don't handle other keys in zoom mode
         }
-        // Add contact buttons if they exist
-        contactButtons.forEach(button => navigableElements.push(button));
+
+        // Check if we should use list navigation or menu navigation
+        const onContentPage = listItems.length > 0;
         
-        switch(e.key) {
-            case 'ArrowDown':
-            case 's':
-            case 'S':
-                e.preventDefault();
-                const nextIndex = (currentIndex + 1) % navigableElements.length;
-                updateSelectionForElements(nextIndex, navigableElements);
-                AudioManager.playNavigationSound();
-                break;
-                
-            case 'ArrowUp':
-            case 'w':
-            case 'W':
-                e.preventDefault();
-                const prevIndex = (currentIndex - 1 + navigableElements.length) % navigableElements.length;
-                updateSelectionForElements(prevIndex, navigableElements);
-                AudioManager.playNavigationSound();
-                break;
-                
-            case 'Enter':
-            case ' ':
-                e.preventDefault();
-                navigateToSelectedElement(navigableElements);
-                break;
-                
-            case 'Escape':
-                // Clear keyboard selection
-                navigableElements.forEach(element => {
-                    element.classList.remove('keyboard-selected');
-                });
-                keyboardNavigationActive = false;
-                break;
+        // Handle content page navigation (list items + back button + contact buttons)
+        if (onContentPage) {
+            const currentBackButton = document.querySelector('.back-button');
+            const contactButtons = document.querySelectorAll('.contact-button');
+            const allNavigableElements = [...listItems];
+            if (currentBackButton) {
+                allNavigableElements.push(currentBackButton);
+            }
+            contactButtons.forEach(button => allNavigableElements.push(button));
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                case 'j':
+                case 'J':
+                    e.preventDefault();
+                    if (listNavigationActive) {
+                        const nextIndex = (currentListIndex + 1) % listItems.length;
+                        selectListItem(nextIndex);
+                    } else {
+                        // Start list navigation
+                        selectListItem(0);
+                    }
+                    break;
+                    
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                case 'k':
+                case 'K':
+                    e.preventDefault();
+                    if (listNavigationActive) {
+                        const prevIndex = (currentListIndex - 1 + listItems.length) % listItems.length;
+                        selectListItem(prevIndex);
+                    } else {
+                        // Start list navigation from last item
+                        selectListItem(listItems.length - 1);
+                    }
+                    break;
+                    
+                case 'Enter':
+                case ' ':
+                case 'z':
+                case 'Z':
+                    e.preventDefault();
+                    if (listNavigationActive && currentListIndex >= 0) {
+                        zoomListItem();
+                    }
+                    break;
+                    
+                case 'Tab':
+                    e.preventDefault();
+                    // Switch between list navigation and other elements
+                    if (listNavigationActive) {
+                        // Clear list selection and select back button or contact buttons
+                        listItems.forEach(item => item.classList.remove('keyboard-selected'));
+                        listNavigationActive = false;
+                        currentListIndex = -1;
+                        
+                        // Select back button if available
+                        if (currentBackButton) {
+                            currentIndex = allNavigableElements.length - (contactButtons.length > 0 ? contactButtons.length + 1 : 1);
+                            updateSelectionForElements(currentIndex, allNavigableElements);
+                        }
+                    } else {
+                        // Start list navigation
+                        selectListItem(0);
+                    }
+                    break;
+                    
+                case 'Escape':
+                case 'Backspace':
+                    e.preventDefault();
+                    if (listNavigationActive) {
+                        // Clear list selection first
+                        listItems.forEach(item => item.classList.remove('keyboard-selected'));
+                        listNavigationActive = false;
+                        currentListIndex = -1;
+                        AudioManager.playNavigationSound();
+                    } else if (currentBackButton) {
+                        // Go back to menu
+                        currentBackButton.click();
+                    }
+                    break;
+            }
+        } else {
+            // Handle main menu navigation
+            const currentBackButton = document.querySelector('.back-button');
+            const contactButtons = document.querySelectorAll('.contact-button');
+            const navigableElements = [...menuOptions];
+            if (currentBackButton) {
+                navigableElements.push(currentBackButton);
+            }
+            contactButtons.forEach(button => navigableElements.push(button));
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    e.preventDefault();
+                    const nextIndex = (currentIndex + 1) % navigableElements.length;
+                    updateSelectionForElements(nextIndex, navigableElements);
+                    AudioManager.playNavigationSound();
+                    break;
+                    
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    e.preventDefault();
+                    const prevIndex = (currentIndex - 1 + navigableElements.length) % navigableElements.length;
+                    updateSelectionForElements(prevIndex, navigableElements);
+                    AudioManager.playNavigationSound();
+                    break;
+                    
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    navigateToSelectedElement(navigableElements);
+                    break;
+                    
+                case 'Escape':
+                    // Clear keyboard selection
+                    navigableElements.forEach(element => {
+                        element.classList.remove('keyboard-selected');
+                    });
+                    keyboardNavigationActive = false;
+                    break;
+            }
         }
     });
     
@@ -249,12 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Add global keyboard shortcut to go back
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' || e.key === 'Backspace') {
-                e.preventDefault();
-                backButton.click();
-            }
-        });
+        // Note: Global escape/backspace handling is done in the main keyboard handler above
+        // to properly respect zoom mode and list navigation state
     }
 });

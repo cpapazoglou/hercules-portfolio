@@ -238,12 +238,73 @@ h1 {
     font-size: 16px;
     backdrop-filter: blur(3px);
     transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    outline: none;
 }
 
 .experience-list li:hover, .education-list li:hover, .hobbies-list li:hover {
     background: rgba(255, 204, 0, 0.2);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+}
+
+/* Keyboard selection for list items */
+.experience-list li.keyboard-selected, 
+.education-list li.keyboard-selected, 
+.hobbies-list li.keyboard-selected {
+    background: rgba(255, 204, 0, 0.3);
+    border-color: #ff9900;
+    box-shadow: 0 8px 25px rgba(255, 204, 0, 0.5);
+    z-index: 10;
+}
+
+/* Zoom mode for enhanced readability */
+.experience-list li.zoomed, 
+.education-list li.zoomed, 
+.hobbies-list li.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.3);
+    background: rgba(0, 0, 0, 0.95);
+    border-color: #ff6600;
+    box-shadow: 0 0 50px rgba(255, 204, 0, 0.8);
+    z-index: 1000;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-size: 18px;
+    line-height: 1.8;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+}
+
+/* Overlay for zoom mode */
+.zoom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.zoom-overlay.active {
+    opacity: 1;
+		z-index: -1;
+}
+
+/* Hide other elements when in zoom mode */
+body.zoom-mode .experience-list li:not(.zoomed),
+body.zoom-mode .education-list li:not(.zoomed),
+body.zoom-mode .hobbies-list li:not(.zoomed) {
+    opacity: 0.1;
+    transition: opacity 0.3s;
 }
 
 .keyboard-instructions {
