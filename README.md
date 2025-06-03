@@ -14,7 +14,7 @@ A heroic arcade-themed portfolio website inspired by the legendary Hercules and 
 ## Structure
 
 ```
-docs/                       # GitHub Pages source
+src/                        # Source files
 ├── index.html              # Main portfolio page
 ├── css/
 │   ├── main.css            # Base styles
@@ -39,7 +39,7 @@ docs/                       # GitHub Pages source
 1. **GitHub Pages**: Visit https://cpapazoglou.github.io/hercules-portfolio
 2. **Local Development**:
    ```bash
-   cd docs
+   cd src
    python -m http.server 8000
    # or
    npx live-server
@@ -49,9 +49,24 @@ docs/                       # GitHub Pages source
 ## Deployment
 
 The website is automatically deployed to GitHub Pages using the `gh-pages` branch:
-- **Source Code**: `main` branch contains the development files
+- **Source Code**: `main` branch contains the development files in the `src/` folder
 - **Live Site**: `gh-pages` branch contains the deployed website files
 - **URL**: https://cpapazoglou.github.io/hercules-portfolio
+
+To deploy updates:
+```bash
+# Work on main branch in src/ folder
+git checkout main
+# Make your changes...
+
+# Deploy to gh-pages
+git checkout gh-pages
+cp -r src/* .
+git add .
+git commit -m "Deploy updates"
+git push origin gh-pages
+git checkout main
+```
 
 ## Controls
 
