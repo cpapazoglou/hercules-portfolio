@@ -46,6 +46,13 @@ docs/                       # GitHub Pages source
    ```
 3. Open your browser to `http://localhost:8000` (or the URL shown by live-server)
 
+## Deployment
+
+The website is automatically deployed to GitHub Pages using the `gh-pages` branch:
+- **Source Code**: `main` branch contains the development files
+- **Live Site**: `gh-pages` branch contains the deployed website files
+- **URL**: https://cpapazoglou.github.io/hercules-portfolio
+
 ## Controls
 
 - **Arrow Keys** or **W/S**: Navigate menu options
