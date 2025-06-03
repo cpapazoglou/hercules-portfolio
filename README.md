@@ -14,7 +14,6 @@ A heroic arcade-themed portfolio website inspired by the legendary Hercules and 
 ## Structure
 
 ```
-src/
 ├── index.html              # Main portfolio page
 ├── css/
 │   ├── main.css            # Base styles
@@ -36,12 +35,12 @@ src/
 
 ## How to Run
 
-1. Open a terminal in the project directory
-2. Start a local server:
+1. **GitHub Pages**: Visit https://cpapazoglou.github.io/hercules-portfolio
+2. **Local Development**:
    ```bash
    python -m http.server 8000
    # or
-   npx live-server src
+   npx live-server
    ```
 3. Open your browser to `http://localhost:8000` (or the URL shown by live-server)
 
