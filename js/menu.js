@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let listNavigationActive = false;
     let currentListIndex = -1;
     let isZoomed = false;
+    let backButtonMode = false;
 
     // Initialize list items if on content pages
     function initializeListItems() {
@@ -145,13 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Select a list item
     function selectListItem(index) {
-        // Clear previous selection
+        // Clear previous selection and back button mode
         listItems.forEach(item => item.classList.remove('keyboard-selected'));
+        clearBackButtonSelection();
         
         if (index >= 0 && index < listItems.length) {
             currentListIndex = index;
             listItems[currentListIndex].classList.add('keyboard-selected');
             listNavigationActive = true;
+            backButtonMode = false;
             
             // Scroll item into view if needed
             listItems[currentListIndex].scrollIntoView({
@@ -161,6 +164,32 @@ document.addEventListener('DOMContentLoaded', () => {
             
             AudioManager.playNavigationSound();
         }
+    }
+
+    // Select back button
+    function selectBackButton() {
+        const backButton = document.querySelector('.back-button');
+        if (backButton) {
+            // Clear list selection
+            listItems.forEach(item => item.classList.remove('keyboard-selected'));
+            listNavigationActive = false;
+            currentListIndex = -1;
+            
+            // Select back button
+            backButton.classList.add('keyboard-selected');
+            backButtonMode = true;
+            
+            AudioManager.playNavigationSound();
+        }
+    }
+
+    // Clear back button selection
+    function clearBackButtonSelection() {
+        const backButton = document.querySelector('.back-button');
+        if (backButton) {
+            backButton.classList.remove('keyboard-selected');
+        }
+        backButtonMode = false;
     }
 
     // Zoom into selected list item
@@ -206,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Clear list navigation state so next escape goes back to menu
             listItems.forEach(item => item.classList.remove('keyboard-selected'));
+            clearBackButtonSelection();
             listNavigationActive = false;
             currentListIndex = -1;
             
@@ -305,11 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (onContentPage) {
             const currentBackButton = document.querySelector('.back-button');
             const contactButtons = document.querySelectorAll('.contact-button');
-            const allNavigableElements = [...listItems];
-            if (currentBackButton) {
-                allNavigableElements.push(currentBackButton);
-            }
-            contactButtons.forEach(button => allNavigableElements.push(button));
             
             switch(e.key) {
                 case 'ArrowDown':
@@ -349,25 +374,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     if (listNavigationActive && currentListIndex >= 0) {
                         zoomListItem();
+                    } else if (backButtonMode && currentBackButton) {
+                        // If back button is selected, trigger it
+                        currentBackButton.click();
+                    } else if (currentBackButton) {
+                        // If nothing is selected, default to back button
+                        currentBackButton.click();
                     }
                     break;
                     
                 case 'Tab':
                     e.preventDefault();
-                    // Switch between list navigation and other elements
+                    // Switch between list navigation and back button navigation
                     if (listNavigationActive) {
-                        // Clear list selection and select back button or contact buttons
-                        listItems.forEach(item => item.classList.remove('keyboard-selected'));
-                        listNavigationActive = false;
-                        currentListIndex = -1;
-                        
-                        // Select back button if available
-                        if (currentBackButton) {
-                            currentIndex = allNavigableElements.length - (contactButtons.length > 0 ? contactButtons.length + 1 : 1);
-                            updateSelectionForElements(currentIndex, allNavigableElements);
-                        }
+                        // Switch to back button mode
+                        selectBackButton();
+                    } else if (backButtonMode) {
+                        // Switch to list navigation
+                        selectListItem(0);
                     } else {
-                        // Start list navigation
+                        // Start with list navigation
                         selectListItem(0);
                     }
                     break;
