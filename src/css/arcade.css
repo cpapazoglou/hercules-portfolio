@@ -24,12 +24,15 @@ body {
     margin: 0;
     padding: 0;
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
 }
 
 h1 {
     font-size: 48px;
-    margin-top: 50px;
+    margin-top: 20px;
+    margin-bottom: 20px;
     text-shadow: 2px 2px 5px #ff0000;
 }
 
@@ -65,7 +68,8 @@ h1 {
 
 .start-screen {
     position: relative;
-    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -173,17 +177,17 @@ h1 {
 .container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 40px 20px;
-    min-height: 100vh;
+    padding: 20px;
+    height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
     backdrop-filter: blur(5px);
-    margin-top: 20px;
-    margin-bottom: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .description {
@@ -199,6 +203,29 @@ h1 {
     list-style: none;
     padding: 0;
     margin: 20px 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: #ffcc00 rgba(255, 204, 0, 0.1);
+}
+
+.experience-list::-webkit-scrollbar, .education-list::-webkit-scrollbar, .hobbies-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.experience-list::-webkit-scrollbar-track, .education-list::-webkit-scrollbar-track, .hobbies-list::-webkit-scrollbar-track {
+    background: rgba(255, 204, 0, 0.1);
+    border-radius: 4px;
+}
+
+.experience-list::-webkit-scrollbar-thumb, .education-list::-webkit-scrollbar-thumb, .hobbies-list::-webkit-scrollbar-thumb {
+    background: #ffcc00;
+    border-radius: 4px;
+}
+
+.experience-list::-webkit-scrollbar-thumb:hover, .education-list::-webkit-scrollbar-thumb:hover, .hobbies-list::-webkit-scrollbar-thumb:hover {
+    background: #ff9900;
 }
 
 .experience-list li, .education-list li, .hobbies-list li {
@@ -235,4 +262,42 @@ h1 {
     border-radius: 5px;
     backdrop-filter: blur(3px);
     z-index: 1000;
+}
+
+/* Ensure full height on all devices */
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Mobile responsiveness */
+@media (max-height: 600px) {
+    .title {
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+    
+    h1 {
+        font-size: 32px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .experience-list, .education-list, .hobbies-list {
+        max-height: 40vh;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .title::before, .title::after {
+        display: none;
+    }
+    
+    .container {
+        max-width: 95%;
+    }
 }
