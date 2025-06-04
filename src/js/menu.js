@@ -38,14 +38,104 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetPage = targetPage.replace('http://localhost:8000/', '');
             }
             
+            // Create lightning effect
+            createLightningEffect();
+            
             // Play sound
             AudioManager.playSelectSound();
             
-            // Navigate after short delay
+            // Navigate after lightning effect
             setTimeout(() => {
                 window.location.href = targetPage;
-            }, 150);
-        }    }
+            }, 600);
+        }
+    }
+    
+    // Create lightning effect for navigation
+    function createLightningEffect() {
+        // Create lightning bolt element
+        const lightning = document.createElement('div');
+        lightning.innerHTML = '⚡';
+        lightning.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: #ffcc00;
+            z-index: 10000;
+            pointer-events: none;
+            text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff9900, 0 0 90px #ff6600;
+            animation: navigationLightning 0.6s ease-out forwards;
+        `;
+        
+        // Add lightning animation keyframes if not exists
+        if (!document.querySelector('#lightning-animation-styles')) {
+            const style = document.createElement('style');
+            style.id = 'lightning-animation-styles';
+            style.textContent = `
+                @keyframes navigationLightning {
+                    0% {
+                        opacity: 0;
+                        transform: translate(-50%, -50%) scale(0.5);
+                        filter: brightness(1);
+                    }
+                    20% {
+                        opacity: 1;
+                        transform: translate(-50%, -50%) scale(1.5);
+                        filter: brightness(3);
+                    }
+                    40% {
+                        opacity: 0.8;
+                        transform: translate(-50%, -50%) scale(1.2);
+                        filter: brightness(2);
+                    }
+                    60% {
+                        opacity: 1;
+                        transform: translate(-50%, -50%) scale(1.4);
+                        filter: brightness(4);
+                    }
+                    100% {
+                        opacity: 0;
+                        transform: translate(-50%, -50%) scale(2);
+                        filter: brightness(1);
+                    }
+                }
+                
+                @keyframes screenFlash {
+                    0% { background: transparent; }
+                    10% { background: rgba(255, 204, 0, 0.1); }
+                    20% { background: transparent; }
+                    30% { background: rgba(255, 204, 0, 0.05); }
+                    40% { background: transparent; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Create screen flash overlay
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+            animation: screenFlash 0.6s ease-out;
+        `;
+        
+        // Add elements to page
+        document.body.appendChild(lightning);
+        document.body.appendChild(flash);
+        
+        // Remove elements after animation
+        setTimeout(() => {
+            if (lightning.parentNode) lightning.parentNode.removeChild(lightning);
+            if (flash.parentNode) flash.parentNode.removeChild(flash);
+        }, 600);
+    }
     
     // Consolidated audio system
     const AudioManager = {
@@ -175,6 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
             listNavigationActive = false;
             currentListIndex = -1;
             
+            // Clear menu option selection (for contact page)
+            menuOptions.forEach(option => option.classList.remove('keyboard-selected'));
+            
             // Select back button
             backButton.classList.add('keyboard-selected');
             backButtonMode = true;
@@ -302,13 +395,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetPage = targetPage.replace('http://localhost:8000/', '');
             }
             
+            // Create lightning effect
+            createLightningEffect();
+            
             // Play sound
             AudioManager.playSelectSound();
             
-            // Navigate after short delay
+            // Navigate after lightning effect
             setTimeout(() => {
                 window.location.href = targetPage;
-            }, 150);
+            }, 600);
         }
     }
     
@@ -330,11 +426,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check if we should use list navigation or menu navigation
         const onContentPage = listItems.length > 0;
+        const onContactPage = document.querySelector('.back-button') && menuOptions.length > 0 && !onContentPage;
         
         // Handle content page navigation (list items + back button + contact buttons)
-        if (onContentPage) {
+        if (onContentPage || onContactPage) {
             const currentBackButton = document.querySelector('.back-button');
             const contactButtons = document.querySelectorAll('.contact-button');
+            
+            // Create combined navigation array for content pages
+            let navigableItems = [...listItems];
+            if (currentBackButton) {
+                navigableItems.push(currentBackButton);
+            }
+            
+            // For contact page, use menu options + back button
+            if (onContactPage) {
+                navigableItems = [...menuOptions];
+                if (currentBackButton) {
+                    navigableItems.push(currentBackButton);
+                }
+            }
             
             switch(e.key) {
                 case 'ArrowDown':
@@ -343,12 +454,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'j':
                 case 'J':
                     e.preventDefault();
-                    if (listNavigationActive) {
-                        const nextIndex = (currentListIndex + 1) % listItems.length;
-                        selectListItem(nextIndex);
+                    if (onContactPage) {
+                        // Navigate through menu options and back button
+                        let nextIndex;
+                        if (backButtonMode) {
+                            // From back button, go to first menu option
+                            nextIndex = 0;
+                            updateSelection(nextIndex);
+                            clearBackButtonSelection();
+                        } else {
+                            nextIndex = (currentIndex + 1) % (menuOptions.length + 1);
+                            if (nextIndex === menuOptions.length) {
+                                // Select back button
+                                selectBackButton();
+                            } else {
+                                updateSelection(nextIndex);
+                                clearBackButtonSelection();
+                            }
+                        }
+                        AudioManager.playNavigationSound();
                     } else {
-                        // Start list navigation
-                        selectListItem(0);
+                        // Navigate through list items and back button
+                        if (backButtonMode) {
+                            // From back button, go to first list item
+                            selectListItem(0);
+                        } else if (listNavigationActive) {
+                            if (currentListIndex === listItems.length - 1) {
+                                // From last list item, go to back button
+                                selectBackButton();
+                            } else {
+                                const nextIndex = currentListIndex + 1;
+                                selectListItem(nextIndex);
+                            }
+                        } else {
+                            // Start with first list item
+                            selectListItem(0);
+                        }
                     }
                     break;
                     
@@ -358,12 +499,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'k':
                 case 'K':
                     e.preventDefault();
-                    if (listNavigationActive) {
-                        const prevIndex = (currentListIndex - 1 + listItems.length) % listItems.length;
-                        selectListItem(prevIndex);
+                    if (onContactPage) {
+                        // Navigate through menu options and back button
+                        let prevIndex;
+                        if (backButtonMode) {
+                            // From back button, go to last menu option
+                            prevIndex = menuOptions.length - 1;
+                            updateSelection(prevIndex);
+                            clearBackButtonSelection();
+                        } else {
+                            if (currentIndex === 0) {
+                                // From first menu option, go to back button
+                                selectBackButton();
+                            } else {
+                                prevIndex = currentIndex - 1;
+                                updateSelection(prevIndex);
+                                clearBackButtonSelection();
+                            }
+                        }
+                        AudioManager.playNavigationSound();
                     } else {
-                        // Start list navigation from last item
-                        selectListItem(listItems.length - 1);
+                        // Navigate through list items and back button
+                        if (backButtonMode) {
+                            // From back button, go to last list item
+                            selectListItem(listItems.length - 1);
+                        } else if (listNavigationActive) {
+                            if (currentListIndex === 0) {
+                                // From first list item, go to back button
+                                selectBackButton();
+                            } else {
+                                const prevIndex = currentListIndex - 1;
+                                selectListItem(prevIndex);
+                            }
+                        } else {
+                            // Start with back button
+                            selectBackButton();
+                        }
                     }
                     break;
                     
@@ -372,7 +543,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'z':
                 case 'Z':
                     e.preventDefault();
-                    if (listNavigationActive && currentListIndex >= 0) {
+                    if (onContactPage) {
+                        // On contact page, open the selected link
+                        if (menuOptions[currentIndex]) {
+                            const selectedOption = menuOptions[currentIndex];
+                            AudioManager.playSelectSound();
+                            // Open external links normally (no lightning effect)
+                            if (selectedOption.target === '_blank') {
+                                window.open(selectedOption.href, '_blank');
+                            } else {
+                                window.location.href = selectedOption.href;
+                            }
+                        }
+                    } else if (listNavigationActive && currentListIndex >= 0) {
                         zoomListItem();
                     } else if (backButtonMode && currentBackButton) {
                         // If back button is selected, trigger it
@@ -385,8 +568,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                 case 'Tab':
                     e.preventDefault();
-                    // Switch between list navigation and back button navigation
-                    if (listNavigationActive) {
+                    if (onContactPage) {
+                        // On contact page, switch to back button
+                        selectBackButton();
+                    } else if (listNavigationActive) {
                         // Switch to back button mode
                         selectBackButton();
                     } else if (backButtonMode) {
@@ -401,7 +586,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'Escape':
                 case 'Backspace':
                     e.preventDefault();
-                    if (listNavigationActive) {
+                    if (onContactPage) {
+                        // On contact page, go back to menu immediately
+                        if (currentBackButton) {
+                            currentBackButton.click();
+                        }
+                    } else if (listNavigationActive) {
                         // Clear list selection first
                         listItems.forEach(item => item.classList.remove('keyboard-selected'));
                         listNavigationActive = false;
@@ -474,6 +664,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Keyboard navigation for pages (back to menu)
     const backButton = document.querySelector('.back-button');
     if (backButton) {
+        // Add back button click handler without lightning effect
+        backButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Play sound
+            AudioManager.playSelectSound();
+            
+            // Get target page from href
+            const targetPage = backButton.href;
+            
+            // Navigate immediately (no lightning effect for back navigation)
+            setTimeout(() => {
+                window.location.href = targetPage;
+            }, 150);
+        });
+        
         // Make back button keyboard accessible
         backButton.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
