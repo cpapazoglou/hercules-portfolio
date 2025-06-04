@@ -55,7 +55,18 @@ The website is automatically deployed to GitHub Pages using the `gh-pages` branc
 - **Live Site**: `gh-pages` branch contains the deployed website files
 - **URL**: https://cpapazoglou.github.io/hercules-portfolio
 
-To deploy updates:
+### Automatic Deployment (Recommended)
+
+The site automatically deploys when you push to the `main` branch using GitHub Actions.
+
+### Manual Deployment
+
+Use the provided deployment script:
+```bash
+./deploy.sh
+```
+
+Or deploy manually:
 ```bash
 # Work on main branch in src/ folder
 git checkout main
