@@ -46,29 +46,6 @@
     </div>
     
     <script src="../js/menu.js"></script>
-    <script>
-        // Info button functionality
-        document.getElementById('infoButton').addEventListener('click', function() {
-            document.getElementById('infoPopup').style.display = 'flex';
-        });
-        
-        function closeInfo() {
-            document.getElementById('infoPopup').style.display = 'none';
-        }
-        
-        // Close info popup when clicking outside
-        document.getElementById('infoPopup').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeInfo();
-            }
-        });
-        
-        // Close info popup with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('infoPopup').style.display === 'flex') {
-                closeInfo();
-            }
-        });
-    </script>
+    <script src="../js/info.js"></script>
 </body>
 </html>
