@@ -265,8 +265,8 @@ h1 {
 .hobbies-list li.zoomed {
     position: fixed;
     top: 5vh;
-    left: 5vw;
-    right: 5vw;
+    left: 1vw;
+    right: 1vw;
     bottom: 5vh;
     background: rgba(0, 0, 0, 0.95);
     border-color: #ff6600;
@@ -392,8 +392,14 @@ html {
 		max-height: none;
 		overflow-y: visible;
 	}
+
+	.experience-list li.zoomed, 
+	.education-list li.zoomed, 
+	.hobbies-list li.zoomed {
+		position: static;
+	}
     
-    .title::before, .title::after {
-        display: none;
-    }
+	.title::before, .title::after {
+			display: none;
+	}
 }
