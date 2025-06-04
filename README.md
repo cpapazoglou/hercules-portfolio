@@ -2,7 +2,7 @@
 
 A heroic arcade-themed portfolio website inspired by the legendary Hercules and classic arcade games.
 
-🌐 **Live Site**: [https://cpapazoglou.github.io/hercules-portfolio/](https://cpapazoglou.github.io/hercules-portfolio/)
+🌐 **Live Site**: [https://cpapazoglou.eu/](https://cpapazoglou.eu/)
 
 ## Features
 
@@ -38,7 +38,7 @@ src/                        # Source files
 
 ## How to Run
 
-1. **GitHub Pages**: Visit https://cpapazoglou.github.io/hercules-portfolio
+1. **Live Site**: Visit https://cpapazoglou.eu
 2. **Local Development**:
    ```bash
    cd src
@@ -53,7 +53,7 @@ src/                        # Source files
 The website is automatically deployed to GitHub Pages using the `gh-pages` branch:
 - **Source Code**: `main` branch contains the development files in the `src/` folder
 - **Live Site**: `gh-pages` branch contains the deployed website files
-- **URL**: https://cpapazoglou.github.io/hercules-portfolio
+- **URL**: https://cpapazoglou.eu
 
 ### Automatic Deployment (Recommended)
 

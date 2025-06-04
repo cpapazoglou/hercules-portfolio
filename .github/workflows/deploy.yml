@@ -46,8 +46,7 @@ jobs:
         # Remove workflow files from deployment
         rm -rf .github/
         
-        # Add CNAME file if you have a custom domain (optional)
-        # echo "your-domain.com" > CNAME
+        # CNAME file is already included from src/, no need to create it manually
         
         # Stage and commit changes
         git add .

@@ -54,7 +54,7 @@ else
     git push origin gh-pages
     
     echo "⚡ Deployment complete! Your site will be available at:"
-    echo "🌐 https://cpapazoglou.github.io/hercules-portfolio/"
+    echo "🌐 https://cpapazoglou.eu/"
     echo ""
     echo "🔄 Note: GitHub Pages may take a few minutes to update."
 fi
