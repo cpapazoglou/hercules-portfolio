@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check if we should use list navigation or menu navigation
         const onContentPage = listItems.length > 0;
-        const onContactPage = document.querySelector('.back-button') && menuOptions.length > 0 && !onContentPage;
+        const onContactPage = window.location.pathname.includes('contact.html');
         
         // Handle content page navigation (list items + back button + contact buttons)
         if (onContentPage || onContactPage) {
@@ -544,8 +544,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'Z':
                     e.preventDefault();
                     if (onContactPage) {
-                        // On contact page, open the selected link
-                        if (menuOptions[currentIndex]) {
+                        // On contact page, open the selected link or back button
+                        if (backButtonMode && currentBackButton) {
+                            // If back button is selected, navigate back
+                            AudioManager.playSelectSound();
+                            window.location.href = currentBackButton.href;
+                        } else if (menuOptions[currentIndex]) {
                             const selectedOption = menuOptions[currentIndex];
                             AudioManager.playSelectSound();
                             // Open external links normally (no lightning effect)
@@ -664,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Keyboard navigation for pages (back to menu)
     const backButton = document.querySelector('.back-button');
     if (backButton) {
-        // Add back button click handler without lightning effect
+        // Add back button click handler
         backButton.addEventListener('click', (e) => {
             e.preventDefault();
             
@@ -674,10 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get target page from href
             const targetPage = backButton.href;
             
-            // Navigate immediately (no lightning effect for back navigation)
-            setTimeout(() => {
-                window.location.href = targetPage;
-            }, 150);
+            // Navigate immediately
+            window.location.href = targetPage;
         });
         
         // Make back button keyboard accessible
