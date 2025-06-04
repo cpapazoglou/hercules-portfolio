@@ -1,0 +1,62 @@
+name: Deploy Hercules Portfolio to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js (optional, for future enhancements)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+    
+    - name: Deploy to GitHub Pages
+      run: |
+        # Create or checkout gh-pages branch
+        if git branch -r | grep -q "origin/gh-pages"; then
+          git checkout -b gh-pages origin/gh-pages
+        else
+          git checkout --orphan gh-pages
+          git rm -rf .
+        fi
+        
+        # Get latest src files from main
+        git checkout main -- src/
+        
+        # Copy src contents to root
+        cp -r src/* .
+        rm -rf src/
+        
+        # Remove workflow files from deployment
+        rm -rf .github/
+        
+        # Add CNAME file if you have a custom domain (optional)
+        # echo "your-domain.com" > CNAME
+        
+        # Stage and commit changes
+        git add .
+        
+        if git diff --staged --quiet; then
+          echo "No changes to deploy"
+        else
+          git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin gh-pages
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
