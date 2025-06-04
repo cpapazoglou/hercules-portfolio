@@ -50,19 +50,25 @@ src/                        # Source files
 
 ## Deployment
 
-This site is automatically deployed to GitHub Pages using GitHub Actions. Every push to the `main` branch triggers a new deployment.
+The website is automatically deployed to GitHub Pages using the `gh-pages` branch:
+- **Source Code**: `main` branch contains the development files in the `src/` folder
+- **Live Site**: `gh-pages` branch contains the deployed website files
+- **URL**: https://cpapazoglou.github.io/hercules-portfolio
 
-### Manual Deployment
-
-To deploy manually, run:
-
+To deploy updates:
 ```bash
-./deploy.sh
+# Work on main branch in src/ folder
+git checkout main
+# Make your changes...
+
+# Deploy to gh-pages
+git checkout gh-pages
+cp -r src/* .
+git add .
+git commit -m "Deploy updates"
+git push origin gh-pages
+git checkout main
 ```
-
-### GitHub Actions
-
-The site uses GitHub Actions for automatic deployment. The workflow file is located at `.github/workflows/deploy.yml` and deploys the `src` directory to GitHub Pages.
 
 ## Controls
 
