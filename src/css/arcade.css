@@ -54,6 +54,7 @@ h1 {
     justify-content: center;
     outline: none;
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+    z-index: 1500;
 }
 
 .music-toggle:hover {
