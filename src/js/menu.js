@@ -137,67 +137,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const AudioManager = {
         // UI/FX sounds
         selectSound: new Audio(ASSET_BASE + 'assets/sounds/select.wav'),
-        // Fallback theme file (not auto-played; used only if Web Audio fails)
-        themeMusic: new Audio(ASSET_BASE + 'assets/sounds/theme.wav'),
-
+        // Mythical theme track (muted by default; only plays after click)
+        themeMusic: new Audio(ASSET_BASE + 'assets/sounds/mythic-theme.mp3'),
+ 
         // State
         useRealAudio: true,
         musicPlaying: false,
-
-        // Web Audio API
-        audioContext: null,
-        masterGainNode: null,
-        delayNode: null,
-        feedbackGainNode: null,
-        backgroundOscillators: [],
-        melodyIntervalId: null,
-
+        // No Web Audio synthesis
+ 
         init() {
             this.selectSound.addEventListener('error', () => {
                 this.useRealAudio = false;
             });
-
-            // Prepare fallback theme
+ 
+            // Prepare theme
             this.themeMusic.loop = true;
             this.themeMusic.preload = 'auto';
-            this.themeMusic.volume = 0.35;
+            this.themeMusic.volume = 0.45;
         },
-
-        // Create or reuse AudioContext safely
-        ensureAudioContext() {
-            if (!this.audioContext) {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            return this.audioContext;
-        },
-
-        // Play a brief synthetic blip (for navigation/select fallback)
+ 
+        // Play a brief synthetic blip (fallback)
         createSyntheticSound(frequency, gain, duration) {
             try {
-                const audioCtx = this.ensureAudioContext();
+                // Minimal fallback using WebAudio if available
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const audioCtx = new AudioCtx();
                 const oscillator = audioCtx.createOscillator();
-                const blipGain = audioCtx.createGain();
-
+                const gainNode = audioCtx.createGain();
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-                blipGain.gain.setValueAtTime(gain, audioCtx.currentTime);
-                blipGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-                oscillator.connect(blipGain).connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode).connect(audioCtx.destination);
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + duration);
-
-                oscillator.addEventListener('ended', () => {
-                    try {
-                        oscillator.disconnect();
-                        blipGain.disconnect();
-                    } catch (_) {}
-                });
+                oscillator.onended = () => {
+                    try { oscillator.disconnect(); gainNode.disconnect(); audioCtx.close(); } catch (_) {}
+                };
             } catch (_) {
                 // Ignore
             }
         },
-
+ 
         playSelectSound() {
             if (this.useRealAudio) {
                 this.selectSound.currentTime = 0;
@@ -206,155 +188,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.createSyntheticSound(800, 0.3, 0.1);
             }
         },
-
+ 
         playNavigationSound() {
             this.createSyntheticSound(600, 0.1, 0.05);
         },
-
-        // Build a simple mythical ambience using Web Audio
+ 
         startMythicTheme() {
             try {
-                const audioCtx = this.ensureAudioContext();
-                if (audioCtx.state === 'suspended') {
-                    // Attempt to resume on user gesture
-                    audioCtx.resume().catch(() => {});
-                }
-
-                // Master gain
-                this.masterGainNode = audioCtx.createGain();
-                this.masterGainNode.gain.setValueAtTime(0.23, audioCtx.currentTime);
-
-                // Subtle echo to emulate cavernous temple
-                this.delayNode = audioCtx.createDelay(1.5);
-                this.delayNode.delayTime.setValueAtTime(0.35, audioCtx.currentTime);
-
-                this.feedbackGainNode = audioCtx.createGain();
-                this.feedbackGainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
-
-                // Connect feedback loop: delay -> feedback -> delay
-                this.delayNode.connect(this.feedbackGainNode);
-                this.feedbackGainNode.connect(this.delayNode);
-
-                // Route: master -> [delay -> feedback] -> destination
-                this.masterGainNode.connect(this.delayNode);
-                this.masterGainNode.connect(audioCtx.destination);
-                this.delayNode.connect(audioCtx.destination);
-
-                // Low drone (two detuned saws for a chorus effect)
-                const baseFrequencyHz = 164.81; // E3 ~ Phrygian vibe
-                const droneGain = audioCtx.createGain();
-                droneGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-
-                const droneOscA = audioCtx.createOscillator();
-                droneOscA.type = 'sawtooth';
-                droneOscA.frequency.setValueAtTime(baseFrequencyHz, audioCtx.currentTime);
-                droneOscA.detune.setValueAtTime(-7, audioCtx.currentTime);
-
-                const droneOscB = audioCtx.createOscillator();
-                droneOscB.type = 'sawtooth';
-                droneOscB.frequency.setValueAtTime(baseFrequencyHz, audioCtx.currentTime);
-                droneOscB.detune.setValueAtTime(7, audioCtx.currentTime);
-
-                droneOscA.connect(droneGain).connect(this.masterGainNode);
-                droneOscB.connect(droneGain);
-
-                droneOscA.start();
-                droneOscB.start();
-
-                this.backgroundOscillators.push(droneOscA, droneOscB, droneGain);
-
-                // Soft lead that steps through a Phrygian-like scale
-                const leadGain = audioCtx.createGain();
-                leadGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-
-                const leadOsc = audioCtx.createOscillator();
-                leadOsc.type = 'sine';
-                leadOsc.connect(leadGain).connect(this.masterGainNode);
-                leadOsc.start();
-
-                this.backgroundOscillators.push(leadOsc, leadGain);
-
-                // Phrygian scale intervals (in semitones): 0, 1, 3, 5, 7, 8, 10
-                const semitone = Math.pow(2, 1 / 12);
-                const scaleSemitones = [0, 1, 3, 5, 7, 8, 10];
-                let stepIndex = 0;
-
-                const updateLead = () => {
-                    const octaveOffset = (stepIndex % 14 === 0) ? 12 : 0; // occasional lift
-                    const interval = scaleSemitones[stepIndex % scaleSemitones.length] + octaveOffset;
-                    const freq = baseFrequencyHz * Math.pow(semitone, interval);
-
-                    // Gentle glide to next note
-                    leadOsc.frequency.cancelScheduledValues(audioCtx.currentTime);
-                    leadOsc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.25);
-
-                    // Small swell on note change
-                    leadGain.gain.cancelScheduledValues(audioCtx.currentTime);
-                    leadGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.2);
-                    leadGain.gain.setTargetAtTime(0.05, audioCtx.currentTime + 0.6, 0.6);
-
-                    stepIndex += 1;
-                };
-
-                // Start melody updates
-                updateLead();
-                this.melodyIntervalId = setInterval(updateLead, 1800);
-
+                this.themeMusic.currentTime = 0;
+                this.themeMusic.play().catch(() => {});
                 this.musicPlaying = true;
                 return true;
-            } catch (error) {
-                // Fallback to static file if Web Audio fails
-                try {
-                    this.themeMusic.currentTime = 0;
-                    this.themeMusic.play();
-                    this.musicPlaying = true;
-                    return true;
-                } catch (_) {
-                    return false;
-                }
+            } catch (_) {
+                return false;
             }
         },
 
         stopMythicTheme() {
-            // Stop Web Audio graph if present
             try {
-                if (this.melodyIntervalId) {
-                    clearInterval(this.melodyIntervalId);
-                    this.melodyIntervalId = null;
-                }
-
-                this.backgroundOscillators.forEach(node => {
-                    try {
-                        if (typeof node.stop === 'function') {
-                            node.stop(0);
-                        }
-                        node.disconnect && node.disconnect();
-                    } catch (_) {}
-                });
-                this.backgroundOscillators = [];
-
-                if (this.masterGainNode) {
-                    try { this.masterGainNode.disconnect(); } catch (_) {}
-                    this.masterGainNode = null;
-                }
-                if (this.delayNode) {
-                    try { this.delayNode.disconnect(); } catch (_) {}
-                    this.delayNode = null;
-                }
-                if (this.feedbackGainNode) {
-                    try { this.feedbackGainNode.disconnect(); } catch (_) {}
-                    this.feedbackGainNode = null;
-                }
-
-                // Also pause fallback theme if it was used
-                try { this.themeMusic.pause(); } catch (_) {}
-
+                this.themeMusic.pause();
                 this.musicPlaying = false;
             } catch (_) {
                 this.musicPlaying = false;
             }
         },
-
+ 
         toggleMusic() {
             if (this.musicPlaying) {
                 this.stopMythicTheme();
