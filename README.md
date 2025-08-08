@@ -8,7 +8,7 @@ A heroic arcade-themed portfolio website inspired by the legendary Hercules and 
 
 - 🎮 **Arcade Theme**: Retro gaming aesthetics with golden colors and classic styling
 - ⌨️ **Keyboard Navigation**: Full keyboard support with arrow keys, WASD, Enter, and Escape
-- 🎵 **Background Music**: Heroic theme music with toggle control
+- 🎵 **Background Music**: Mythical ambient theme with toggle control (muted by default)
 - 🎯 **Interactive Elements**: Hover effects, animations, and sound feedback
 - 📱 **Responsive Design**: Works on desktop, tablet, and mobile devices
 - 🏛️ **Greek Mythology Theme**: Inspired by the twelve labors of Hercules
@@ -28,8 +28,8 @@ src/                        # Source files
 │   ├── images/
 │   │   └── hercules-background.svg
 │   └── sounds/
-│       ├── theme.wav       # Background music
-│       └── select.wav      # Navigation sound
+│       ├── mythic-theme.mp3 # Background music (mythical ambient loop)
+│       └── select.wav       # Navigation sound
 └── pages/
     ├── experience.html     # Professional experience
     ├── education.html      # Educational background
@@ -88,14 +88,21 @@ git checkout main
 - **Enter** or **Space**: Select current option
 - **Escape**: Clear selection / Go back
 - **Backspace**: Return to main menu (on content pages)
-- **Music Button**: Toggle background music on/off
+- **Music Button**: Toggle background music on/off (site loads muted)
 
 ## Theme
 
 The website combines:
 - **Greek Mythology**: Hercules theme with references to his twelve labors
 - **Arcade Aesthetics**: Golden colors, retro fonts, and classic game-style UI
-- **Modern Web Tech**: CSS animations, Web Audio API, responsive design
+- **Modern Web Tech**: CSS animations, responsive design
+
+## Audio Theme
+
+- The background music is a mythical ambient loop stored at `src/assets/sounds/mythic-theme.mp3`.
+- The site loads with music muted. Users can manually enable it via the speaker button (🔈 → 🔊).
+- To replace the track, drop a new looped MP3 at `src/assets/sounds/mythic-theme.mp3` or update the path in `src/js/menu.js` (search for `mythic-theme.mp3`).
+- Current track source: Public Domain (FreePD). If you switch to a Creative Commons track requiring attribution, add proper credit here and/or in the site footer.
 
 ## Development Journey
 
