@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,7 +29,15 @@ jobs:
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
     
+    - name: Validate deploy (PR only)
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        echo "PR validation: skipping deploy push"
+        test -d src || (echo "src directory is missing" && exit 1)
+        echo "Validation passed."
+    
     - name: Deploy to GitHub Pages
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       run: |
         # Create or checkout gh-pages branch
         if git branch -r | grep -q "origin/gh-pages"; then
@@ -46,10 +57,10 @@ jobs:
         # Remove workflow files from deployment
         rm -rf .github/
         
-        # CNAME file is already included from src/, no need to create it manually
+        # CNAME file is already included from src/
         
         # Stage and commit changes
-        git add .
+        git add -A
         
         if git diff --staged --quiet; then
           echo "No changes to deploy"
