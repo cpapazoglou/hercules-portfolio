@@ -30,13 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (menuOptions[currentIndex]) {
             const selectedOption = menuOptions[currentIndex];
             
-            // Get target page from href attribute
-            let targetPage = selectedOption.href;
-            
-            // If href is absolute, make it relative
-            if (targetPage.includes('localhost:8000')) {
-                targetPage = targetPage.replace('http://localhost:8000/', '');
-            }
+            // Get target page from href attribute (handles relative or absolute URLs)
+            const targetPage = selectedOption.getAttribute('href');
             
             // Create lightning effect
             createLightningEffect();
@@ -144,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         themeMusic: new Audio('assets/sounds/theme.wav'),
         useRealAudio: true,
         musicPlaying: false,
+        // Reuse a single AudioContext to avoid performance issues and context limits
+        audioContext: null,
         
         init() {
             this.selectSound.addEventListener('error', () => {
@@ -156,7 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create synthetic audio using Web Audio API
         createSyntheticSound(frequency, gain, duration) {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const audioCtx = this.audioContext;
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
@@ -165,10 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
                 gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
                 
-                oscillator.start(audioCtx.currentTime);
+                oscillator.start();
                 oscillator.stop(audioCtx.currentTime + duration);
+                
+                oscillator.addEventListener('ended', () => {
+                    try {
+                        oscillator.disconnect();
+                        gainNode.disconnect();
+                    } catch (e) {
+                        // ignore cleanup errors
+                    }
+                });
             } catch (error) {
                 // Sound failed silently
             }
@@ -387,13 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements[currentIndex]) {
             const selectedElement = elements[currentIndex];
             
-            // Get target page from href attribute
-            let targetPage = selectedElement.href;
-            
-            // If href is absolute, make it relative
-            if (targetPage.includes('localhost:8000')) {
-                targetPage = targetPage.replace('http://localhost:8000/', '');
-            }
+            // Get target page from href attribute (handles relative or absolute URLs)
+            const targetPage = selectedElement.getAttribute('href');
             
             // Create lightning effect
             createLightningEffect();
@@ -552,9 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else if (menuOptions[currentIndex]) {
                             const selectedOption = menuOptions[currentIndex];
                             AudioManager.playSelectSound();
-                            // Open external links normally (no lightning effect)
+                            // Open external links safely
                             if (selectedOption.target === '_blank') {
-                                window.open(selectedOption.href, '_blank');
+                                window.open(selectedOption.href, '_blank', 'noopener,noreferrer');
                             } else {
                                 window.location.href = selectedOption.href;
                             }
