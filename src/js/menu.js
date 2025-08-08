@@ -150,6 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.useRealAudio = false;
             });
  
+            // Preload select sound to minimize latency
+            this.selectSound.preload = 'auto';
+            try { this.selectSound.load(); } catch (_) {}
+
             // Prepare theme
             this.themeMusic.loop = true;
             this.themeMusic.preload = 'auto';
@@ -163,18 +167,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (!AudioCtx) return;
                 const audioCtx = new AudioCtx();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-                oscillator.connect(gainNode).connect(audioCtx.destination);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + duration);
-                oscillator.onended = () => {
-                    try { oscillator.disconnect(); gainNode.disconnect(); audioCtx.close(); } catch (_) {}
+                const startTone = () => {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                    oscillator.connect(gainNode).connect(audioCtx.destination);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + duration);
+                    oscillator.onended = () => {
+                        try { oscillator.disconnect(); gainNode.disconnect(); audioCtx.close(); } catch (_) {}
+                    };
                 };
+                if (typeof audioCtx.resume === 'function' && audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(startTone).catch(startTone);
+                } else {
+                    startTone();
+                }
             } catch (_) {
                 // Ignore
             }
@@ -567,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (backButtonMode && currentBackButton) {
                             // If back button is selected, navigate back
                             AudioManager.playSelectSound();
-                            window.location.href = currentBackButton.href;
+                            currentBackButton.click();
                         } else if (menuOptions[currentIndex]) {
                             const selectedOption = menuOptions[currentIndex];
                             AudioManager.playSelectSound();
@@ -610,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'Backspace':
                     e.preventDefault();
                     if (onContactPage) {
-                        // On contact page, go back to menu immediately
+                        // On contact page, go back to menu with sound via click handler
                         if (currentBackButton) {
                             currentBackButton.click();
                         }
@@ -696,8 +707,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get target page from href
             const targetPage = backButton.href;
             
-            // Navigate immediately
-            window.location.href = targetPage;
+            // Navigate after a short delay so the sound starts before iOS unloads the page
+            setTimeout(() => {
+                window.location.href = targetPage;
+            }, 250);
         });
         
         // Make back button keyboard accessible
