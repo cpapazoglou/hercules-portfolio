@@ -5,9 +5,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  pull_request_target:
+    types: [ closed ]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   deploy:
@@ -18,6 +21,8 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        # For PRs, checkout the PR head
+        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
     
     - name: Setup Node.js (optional, for future enhancements)
       uses: actions/setup-node@v4
@@ -29,14 +34,12 @@ jobs:
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
     
-    - name: Validate deploy (PR only)
-      if: ${{ github.event_name == 'pull_request' }}
+    - name: Validate source files
       run: |
-        echo "PR validation: skipping deploy push"
         test -d src || (echo "src directory is missing" && exit 1)
-        echo "Validation passed."
+        echo "Source validation passed."
     
-    - name: Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages (Main Branch)
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       run: |
         # Create or checkout gh-pages branch
@@ -70,3 +73,182 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Deploy PR Preview
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        echo "Deploying PR #${PR_NUMBER} preview"
+        
+        # Create or checkout gh-pages branch
+        if git branch -r | grep -q "origin/gh-pages"; then
+          git checkout -b gh-pages origin/gh-pages
+        else
+          git checkout --orphan gh-pages
+          git rm -rf .
+        fi
+        
+        # Create PR preview directory
+        PR_DIR="pr-${PR_NUMBER}"
+        mkdir -p "${PR_DIR}"
+        
+        # Get src files from the PR branch
+        git checkout ${{ github.event.pull_request.head.sha }} -- src/
+        
+        # Copy src contents to PR directory
+        cp -r src/* "${PR_DIR}/"
+        rm -rf src/
+        
+        # Update relative paths in HTML files for the subdirectory
+        # For now, we'll copy all assets into each PR directory to avoid path issues
+        # This is simpler and more reliable than path rewriting
+        echo "Copying shared assets to PR directory"
+        
+        # Create a simple index file that lists all PR previews if it doesn't exist
+        if [ ! -f "index.html" ]; then
+          cat > index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hercules Portfolio - PR Previews</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #fff; }
+                a { color: #ffd700; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+                .main-site { margin-bottom: 30px; padding: 20px; border: 2px solid #ffd700; }
+                .preview-list { margin-top: 20px; }
+                .preview-item { margin: 10px 0; padding: 10px; background: #333; }
+            </style>
+        </head>
+        <body>
+            <div class="main-site">
+                <h1>🏛️ Hercules Portfolio</h1>
+                <p><a href="https://cpapazoglou.eu/">Visit Main Site</a></p>
+            </div>
+            <h2>Pull Request Previews</h2>
+            <div class="preview-list" id="previews">
+                <p>PR previews will appear here...</p>
+            </div>
+        </body>
+        </html>
+        EOF
+        fi
+        
+        # Stage and commit changes
+        git add -A
+        
+        if git diff --staged --quiet; then
+          echo "No changes to deploy for PR preview"
+        else
+          git commit -m "Deploy PR #${PR_NUMBER} preview: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin gh-pages
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Comment PR with preview URL
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const prNumber = context.payload.pull_request.number;
+          const previewUrl = `https://cpapazoglou.eu/pr-${prNumber}/`;
+          
+          const commentBody = `🚀 **PR Preview Deployed!**
+          
+          Your changes are now available for preview at:
+          🔗 **[${previewUrl}](${previewUrl})**
+          
+          The preview will be automatically updated when you push new commits to this PR.
+          
+          ---
+          *This preview will be automatically cleaned up when the PR is closed.*`;
+          
+          // Check if we already commented
+          const comments = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber,
+          });
+          
+          const existingComment = comments.data.find(comment => 
+            comment.user.login === 'github-actions[bot]' && 
+            comment.body.includes('PR Preview Deployed')
+          );
+          
+          if (existingComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: commentBody
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody
+            });
+          }
+
+  cleanup-pr:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request_target' && github.event.action == 'closed' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: main
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+    
+    - name: Cleanup PR Preview
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        echo "Cleaning up PR #${PR_NUMBER} preview"
+        
+        # Checkout gh-pages branch
+        if git branch -r | grep -q "origin/gh-pages"; then
+          git checkout -b gh-pages origin/gh-pages
+          
+          # Remove PR directory if it exists
+          PR_DIR="pr-${PR_NUMBER}"
+          if [ -d "${PR_DIR}" ]; then
+            rm -rf "${PR_DIR}"
+            git add -A
+            git commit -m "Cleanup PR #${PR_NUMBER} preview"
+            git push origin gh-pages
+            echo "Cleaned up PR #${PR_NUMBER} preview directory"
+          else
+            echo "PR #${PR_NUMBER} preview directory not found"
+          fi
+        else
+          echo "gh-pages branch not found"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Comment on closed PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const prNumber = context.payload.pull_request.number;
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber,
+            body: `🧹 **PR Preview Cleaned Up**
+            
+            The preview deployment for this PR has been automatically removed.
+            
+            Thank you for your contribution! 🎉`
+          });
