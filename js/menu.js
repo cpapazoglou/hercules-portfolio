@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const menuOptions = document.querySelectorAll('.menu-option');
+    const ASSET_BASE = window.location.pathname.indexOf('/pages/') !== -1 ? '../' : '';
     
     // Keyboard navigation state
     let currentIndex = 0;
@@ -134,55 +135,51 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Consolidated audio system
     const AudioManager = {
-        // Load audio files (optional)
-        selectSound: new Audio('assets/sounds/select.wav'),
-        themeMusic: new Audio('assets/sounds/theme.wav'),
+        // UI/FX sounds
+        selectSound: new Audio(ASSET_BASE + 'assets/sounds/select.wav'),
+        // Mythical theme track (muted by default; only plays after click)
+        themeMusic: new Audio(ASSET_BASE + 'assets/sounds/mythic-theme.mp3'),
+ 
+        // State
         useRealAudio: true,
         musicPlaying: false,
-        // Reuse a single AudioContext to avoid performance issues and context limits
-        audioContext: null,
-        
+        // No Web Audio synthesis
+ 
         init() {
             this.selectSound.addEventListener('error', () => {
                 this.useRealAudio = false;
             });
+ 
+            // Prepare theme
             this.themeMusic.loop = true;
-            this.themeMusic.volume = 0.7;
+            this.themeMusic.preload = 'auto';
+            this.themeMusic.volume = 0.45;
         },
-        
-        // Create synthetic audio using Web Audio API
+ 
+        // Play a brief synthetic blip (fallback)
         createSyntheticSound(frequency, gain, duration) {
             try {
-                if (!this.audioContext) {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const audioCtx = this.audioContext;
+                // Minimal fallback using WebAudio if available
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const audioCtx = new AudioCtx();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
+                oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
                 gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-                
+                oscillator.connect(gainNode).connect(audioCtx.destination);
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + duration);
-                
-                oscillator.addEventListener('ended', () => {
-                    try {
-                        oscillator.disconnect();
-                        gainNode.disconnect();
-                    } catch (e) {
-                        // ignore cleanup errors
-                    }
-                });
-            } catch (error) {
-                // Sound failed silently
+                oscillator.onended = () => {
+                    try { oscillator.disconnect(); gainNode.disconnect(); audioCtx.close(); } catch (_) {}
+                };
+            } catch (_) {
+                // Ignore
             }
         },
-        
+ 
         playSelectSound() {
             if (this.useRealAudio) {
                 this.selectSound.currentTime = 0;
@@ -191,24 +188,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.createSyntheticSound(800, 0.3, 0.1);
             }
         },
-        
+ 
         playNavigationSound() {
             this.createSyntheticSound(600, 0.1, 0.05);
         },
-        
+ 
+        startMythicTheme() {
+            try {
+                this.themeMusic.currentTime = 0;
+                this.themeMusic.play().catch(() => {});
+                this.musicPlaying = true;
+                return true;
+            } catch (_) {
+                return false;
+            }
+        },
+
+        stopMythicTheme() {
+            try {
+                this.themeMusic.pause();
+                this.musicPlaying = false;
+            } catch (_) {
+                this.musicPlaying = false;
+            }
+        },
+ 
         toggleMusic() {
             if (this.musicPlaying) {
-                this.themeMusic.pause();
+                this.stopMythicTheme();
                 return '🔈';
             } else {
-                this.themeMusic.play().catch(e => {
-                    // Theme music requires user interaction - fail silently
-                });
-                return '🔊';
+                const started = this.startMythicTheme();
+                return started ? '🔊' : '🔈';
             }
         }
     };
-    
+
     // Initialize audio system
     AudioManager.init();
 
@@ -660,13 +675,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add music toggle
     const musicToggle = document.createElement('button');
     musicToggle.classList.add('music-toggle');
-    musicToggle.innerHTML = '🔊';
+    musicToggle.innerHTML = '🔈';
     musicToggle.title = 'Toggle Music';
     document.body.appendChild(musicToggle);
-    
+
     musicToggle.addEventListener('click', () => {
         musicToggle.innerHTML = AudioManager.toggleMusic();
-        AudioManager.musicPlaying = !AudioManager.musicPlaying;
     });
     
     // Keyboard navigation for pages (back to menu)
