@@ -9,15 +9,18 @@ echo "🏛️ Deploying Hercules Portfolio to GitHub Pages..."
 
 # Ensure we're on the main branch
 echo "📋 Checking out main branch..."
-git checkout main
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "main" ]; then
+  git checkout main
+fi
 
 # Make sure we have the latest changes
 echo "📥 Pulling latest changes..."
-git pull origin main
+git pull --ff-only origin main
 
 # Switch to gh-pages branch
 echo "🚀 Switching to gh-pages branch..."
-if git branch | grep -q "gh-pages"; then
+if git show-ref --verify --quiet refs/heads/gh-pages; then
     git checkout gh-pages
 else
     git checkout -b gh-pages
@@ -25,7 +28,26 @@ fi
 
 # Pull latest gh-pages changes
 echo "📥 Pulling latest gh-pages changes..."
-git pull origin gh-pages 2>/dev/null || echo "No remote gh-pages branch yet"
+git pull --ff-only origin gh-pages 2>/dev/null || echo "No remote gh-pages branch yet"
+
+# Sanity check to avoid destructive operations in wrong directory
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "gh-pages" ]; then
+  echo "❌ Not on gh-pages branch; aborting"
+  exit 1
+fi
+
+# Preserve CNAME if exists
+PRESERVE_CNAME=false
+if [ -f CNAME ]; then
+  cp CNAME /tmp/CNAME.deploy.$$ && PRESERVE_CNAME=true
+fi
+
+# Clean existing files to prevent stale assets, keep .git
+echo "🧹 Cleaning old files on gh-pages..."
+find . -mindepth 1 -maxdepth 1 \
+  ! -name ".git" \
+  ! -name ".gitignore" \
+  -exec rm -rf {} +
 
 # Get latest src files from main branch
 echo "📂 Getting latest source files..."
@@ -36,9 +58,14 @@ echo "📋 Copying files to deployment directory..."
 cp -r src/* .
 rm -rf src/
 
+# Restore CNAME
+if [ "$PRESERVE_CNAME" = true ]; then
+  mv /tmp/CNAME.deploy.$$ CNAME
+fi
+
 # Stage all changes
 echo "📦 Staging changes..."
-git add .
+git add -A
 
 # Check if there are changes to commit
 if git diff --staged --quiet; then
