@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Common head elements loaded by component loader -->
     <title>Education - Hercules Portfolio</title>
-    <link rel="icon" type="image/svg+xml" href="../assets/images/thunder-favicon.svg">
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/arcade.css">
 </head>
 <body>
     <div class="container">
@@ -34,24 +30,15 @@
                 • <strong>German</strong> - Shield of European market conquest</small></li>
             
         </ul>
-        <a href="../index.html" class="back-button" tabindex="0">Back</a>
-        <div class="keyboard-instructions">
-            ⌨️ Arrow Keys: Navigate • Enter: Zoom/Back • Tab: Switch modes • Escape: Back/Exit
-        </div>
+        <div id="backButtonContainer"></div>
+        <div id="keyboardInstructionsContainer"></div>
     </div>
     
-    <!-- Info button -->
-    <div class="info-button" id="infoButton">ℹ️</div>
-    <div class="info-popup" id="infoPopup">
-        <div class="info-content">
-            <h3>About This Portfolio</h3>
-            <p>This is the <strong>heroic version</strong> of Charalampos Papazoglou's CV, inspired by the 12 labors of Hercules from Greek mythology.</p>
-            <p>Navigate through the legendary journey of skills, experience, and achievements! 🏛️⚡</p>
-            <button class="close-info" onclick="closeInfo()">×</button>
-        </div>
-    </div>
+    <!-- Common components loaded dynamically -->
+    <div id="infoPopupContainer"></div>
+    <div id="scriptsContainer"></div>
     
-    <script src="../js/menu.js"></script>
-    <script src="../js/info.js"></script>
+    <!-- Load component loader -->
+    <script src="../components/loader.js"></script>
 </body>
 </html>
