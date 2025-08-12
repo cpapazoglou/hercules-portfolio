@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Common head elements loaded by component loader -->
     <title>Education - Hercules Portfolio</title>
+    <head-elements></head-elements>
 </head>
 <body>
     <div class="container">
@@ -30,15 +30,15 @@
                 • <strong>German</strong> - Shield of European market conquest</small></li>
             
         </ul>
-        <div id="backButtonContainer"></div>
-        <div id="keyboardInstructionsContainer"></div>
+        <back-button></back-button>
+        <keyboard-instructions></keyboard-instructions>
     </div>
     
-    <!-- Common components loaded dynamically -->
-    <div id="infoPopupContainer"></div>
-    <div id="scriptsContainer"></div>
+    <!-- Web Components -->
+    <info-popup></info-popup>
+    <script-loader></script-loader>
     
-    <!-- Load component loader -->
-    <script src="../components/loader.js"></script>
+    <!-- Load Web Components -->
+    <script type="module" src="../components/web-components.js"></script>
 </body>
 </html>

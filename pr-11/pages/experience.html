@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Common head elements loaded by component loader -->
     <title>Experience - Hercules Portfolio</title>
+    <head-elements></head-elements>
 </head>
 <body>
     <div class="container">
@@ -25,15 +25,15 @@
             <li>🎯 <strong>Master Craftsman of the Web</strong> - Netstudio (Jun 2015 - Feb 2017)<br>
                 <small style="color: #ff9900;">Greek Realm | Forged <strong>24 legendary e-commerce temples</strong> using the ancient arts of Drupal, WordPress, and Shopify!</small></li>
         </ul>
-        <div id="backButtonContainer"></div>
-        <div id="keyboardInstructionsContainer"></div>
+        <back-button></back-button>
+        <keyboard-instructions></keyboard-instructions>
     </div>
     
-    <!-- Common components loaded dynamically -->
-    <div id="infoPopupContainer"></div>
-    <div id="scriptsContainer"></div>
+    <!-- Web Components -->
+    <info-popup></info-popup>
+    <script-loader></script-loader>
     
-    <!-- Load component loader -->
-    <script src="../components/loader.js"></script>
+    <!-- Load Web Components -->
+    <script type="module" src="../components/web-components.js"></script>
 </body>
 </html>
