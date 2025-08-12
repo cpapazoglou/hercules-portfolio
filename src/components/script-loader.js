@@ -1,5 +1,13 @@
-// Web Component for loading common scripts
-class ScriptLoader extends HTMLElement {
+import { LitElement, html, css } from 'lit';
+
+// Lit Web Component for loading common scripts
+class ScriptLoader extends LitElement {
+    static styles = css`
+        :host {
+            display: none;
+        }
+    `;
+
     constructor() {
         super();
         this.basePath = this.getBasePath();
@@ -12,6 +20,7 @@ class ScriptLoader extends HTMLElement {
     }
 
     connectedCallback() {
+        super.connectedCallback();
         this.loadScripts();
     }
 
@@ -29,6 +38,10 @@ class ScriptLoader extends HTMLElement {
             infoScript.src = `${this.basePath}js/info.js`;
             document.head.appendChild(infoScript);
         }
+    }
+
+    render() {
+        return html`<!-- Scripts loaded via connectedCallback -->`;
     }
 }
 

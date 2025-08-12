@@ -1,5 +1,13 @@
-// Web Component for common head elements
-class HeadElements extends HTMLElement {
+import { LitElement, html, css } from 'lit';
+
+// Lit Web Component for common head elements
+class HeadElements extends LitElement {
+    static styles = css`
+        :host {
+            display: none;
+        }
+    `;
+
     constructor() {
         super();
         this.basePath = this.getBasePath();
@@ -12,6 +20,7 @@ class HeadElements extends HTMLElement {
     }
 
     connectedCallback() {
+        super.connectedCallback();
         this.loadHeadElements();
     }
 
@@ -53,6 +62,10 @@ class HeadElements extends HTMLElement {
             arcadeCSS.setAttribute('href', `${this.basePath}css/arcade.css`);
             head.appendChild(arcadeCSS);
         }
+    }
+
+    render() {
+        return html`<!-- Head elements loaded via connectedCallback -->`;
     }
 }
 
