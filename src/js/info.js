@@ -1,33 +1,14 @@
-// Info button functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const infoButton = document.getElementById('infoButton');
-    const infoPopup = document.getElementById('infoPopup');
-    
-    if (infoButton && infoPopup) {
-        // Open info popup when button is clicked
-        infoButton.addEventListener('click', function() {
-            infoPopup.style.display = 'flex';
-        });
-        
-        // Close info popup when clicking outside
-        infoPopup.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeInfo();
-            }
-        });
-        
-        // Close info popup with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && infoPopup.style.display === 'flex') {
-                closeInfo();
-            }
-        });
-    }
-});
+// Info button functionality - now handled by Lit components
+// This file is kept for backward compatibility but functionality is moved to components
 
+// Global function for backwards compatibility (if needed)
 function closeInfo() {
-    const infoPopup = document.getElementById('infoPopup');
-    if (infoPopup) {
-        infoPopup.style.display = 'none';
+    // Try to find and interact with the Lit component
+    const infoPopup = document.querySelector('info-popup');
+    if (infoPopup && infoPopup.closeInfo) {
+        infoPopup.closeInfo();
     }
 }
+
+// Note: The info popup functionality is now handled by the Lit component 
+// with proper encapsulation and reactive properties.

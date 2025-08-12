@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Charalampos Papazoglou</title>
+    <title>Charalampos Papazoglou - Hercules Portfolio</title>
     <!-- Import map for Lit -->
     <script type="importmap">
     {
@@ -12,27 +12,20 @@
     }
     </script>
     <!-- Essential scripts that work without dependencies -->
+    <script src="js/audio-manager.js"></script>
     <script src="js/info-popup.js"></script>
     <script src="js/menu.js"></script>
     <head-elements></head-elements>
 </head>
 <body>
-    <div class="start-screen">
-        <h1 class="title">Charalampos Papazoglou</h1>
-        <div class="menu">
-            <a href="pages/experience.html" class="menu-option">Experience</a>
-            <a href="pages/education.html" class="menu-option">Education</a>
-            <a href="pages/hobbies.html" class="menu-option">Hobbies</a>
-            <a href="pages/contact.html" class="menu-option">Contact</a>
-        </div>
-        <keyboard-instructions></keyboard-instructions>
-    </div>
+    <!-- Single Page Application using Lit Components -->
+    <portfolio-app></portfolio-app>
     
     <!-- Web Components -->
     <info-popup></info-popup>
     <script-loader></script-loader>
     
-    <!-- Load Web Components -->
+    <!-- Load Lit Web Components -->
     <script type="module" src="components/web-components.js"></script>
 </body>
 </html>
