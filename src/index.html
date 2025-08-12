@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Common head elements loaded by component loader -->
     <title>Charalampos Papazoglou</title>
+    <head-elements></head-elements>
 </head>
 <body>
     <div class="start-screen">
@@ -13,14 +13,14 @@
             <a href="pages/hobbies.html" class="menu-option">Hobbies</a>
             <a href="pages/contact.html" class="menu-option">Contact</a>
         </div>
-        <div id="keyboardInstructionsContainer"></div>
+        <keyboard-instructions></keyboard-instructions>
     </div>
     
-    <!-- Common components loaded dynamically -->
-    <div id="infoPopupContainer"></div>
-    <div id="scriptsContainer"></div>
+    <!-- Web Components -->
+    <info-popup></info-popup>
+    <script-loader></script-loader>
     
-    <!-- Load component loader -->
-    <script src="components/loader.js"></script>
+    <!-- Load Web Components -->
+    <script type="module" src="components/web-components.js"></script>
 </body>
 </html>
