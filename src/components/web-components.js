@@ -1,6 +1,9 @@
 // Lit Web Components loader - loads all component definitions
 // This replaces the old ComponentLoader class with native Lit Components
 
+// Import audio manager first
+import('./audio-manager.js');
+
 // Import all component definitions
 import('./head-elements.js');
 import('./info-popup.js');
