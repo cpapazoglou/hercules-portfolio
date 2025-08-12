@@ -1,0 +1,56 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="skyGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#001133;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#002244;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000011;stop-opacity:1" />
+    </radialGradient>
+    
+    <linearGradient id="columnGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffcc00;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#ff9900;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#ffcc00;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <linearGradient id="templeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffcc00;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#ff6600;stop-opacity:0.6" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky background -->
+  <rect width="800" height="600" fill="url(#skyGradient)"/>
+  
+  <!-- Stars -->
+  <circle cx="100" cy="80" r="1" fill="white" opacity="0.8"/>
+  <circle cx="200" cy="120" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="350" cy="60" r="1" fill="white" opacity="0.9"/>
+  <circle cx="450" cy="100" r="1" fill="white" opacity="0.7"/>
+  <circle cx="600" cy="90" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="700" cy="130" r="1" fill="white" opacity="0.6"/>
+  
+  <!-- Mount Olympus silhouette -->
+  <polygon points="0,400 150,250 300,300 450,200 600,280 800,350 800,600 0,600" 
+           fill="rgba(0,0,0,0.6)" opacity="0.7"/>
+  
+  <!-- Greek temple silhouette at bottom -->
+  <rect x="250" y="450" width="300" height="150" fill="url(#templeGradient)" opacity="0.3"/>
+  
+  <!-- Temple columns -->
+  <rect x="270" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="310" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="350" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="390" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="430" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="470" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  <rect x="510" y="430" width="15" height="120" fill="url(#columnGradient)" opacity="0.4"/>
+  
+  <!-- Temple roof -->
+  <polygon points="240,430 560,430 450,380 350,380" fill="url(#templeGradient)" opacity="0.5"/>
+  
+  <!-- Greek key pattern border elements -->
+  <rect x="0" y="0" width="800" height="8" fill="rgba(255,204,0,0.3)"/>
+  <rect x="0" y="592" width="800" height="8" fill="rgba(255,204,0,0.3)"/>
+  <rect x="0" y="0" width="8" height="600" fill="rgba(255,204,0,0.3)"/>
+  <rect x="792" y="0" width="8" height="600" fill="rgba(255,204,0,0.3)"/>
+</svg>
