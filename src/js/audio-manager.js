@@ -196,9 +196,16 @@
         }
     }
 
-    // Create and expose singleton instance only if not already defined
+    // Create and expose singleton instance only if not already defined by menu.js
+    // The menu.js defines its own AudioManager, so we should not override it
     if (!window.AudioManager) {
         window.AudioManager = new AudioManagerService();
+    } else {
+        // If AudioManager already exists (from menu.js), extend it with our functions
+        const existingAudioManager = window.AudioManager;
+        if (!existingAudioManager.createLightningEffect) {
+            existingAudioManager.createLightningEffect = new AudioManagerService().createLightningEffect;
+        }
     }
     
     // Also add music toggle button for consistency
