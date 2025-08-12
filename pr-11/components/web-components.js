@@ -1,5 +1,5 @@
-// Web Components loader - loads all component definitions
-// This replaces the old ComponentLoader class with native Web Components
+// Lit Web Components loader - loads all component definitions
+// This replaces the old ComponentLoader class with native Lit Components
 
 // Import all component definitions
 import('./head-elements.js');
@@ -8,4 +8,11 @@ import('./script-loader.js');
 import('./back-button.js');
 import('./keyboard-instructions.js');
 
-console.log('Web Components loaded successfully');
+// Import page components for single-page app functionality
+import('./experience-page.js');
+import('./education-page.js');
+import('./hobbies-page.js');
+import('./contact-page.js');
+import('./portfolio-app.js');
+
+console.log('Lit Web Components loaded successfully');
