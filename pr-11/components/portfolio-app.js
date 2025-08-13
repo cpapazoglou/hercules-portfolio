@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import AudioManager from './audio-manager.js';
 
 // Lit Web Component for main portfolio with client-side routing
 class PortfolioApp extends LitElement {
@@ -127,21 +128,51 @@ class PortfolioApp extends LitElement {
                 font-size: 20px;
             }
         }
+
+        .music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: 2px solid #000;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
     `;
 
     static properties = {
-        currentPage: { type: String }
+        currentPage: { type: String },
+        musicIcon: { type: String }
     };
 
     constructor() {
         super();
         this.currentPage = 'home';
+        this.musicIcon = '🔈';
     }
 
     connectedCallback() {
         super.connectedCallback();
         // Listen for keyboard navigation
         document.addEventListener('keydown', this.handleKeydown.bind(this));
+        
+        // Initialize current index for keyboard navigation
+        this.currentIndex = 0;
+        this.keyboardNavigationActive = false;
     }
 
     disconnectedCallback() {
@@ -154,19 +185,91 @@ class PortfolioApp extends LitElement {
             if (e.key === 'Escape') {
                 this.navigateToPage('home');
             }
+            return;
+        }
+
+        // Handle keyboard navigation on home page
+        const menuButtons = this.shadowRoot.querySelectorAll('.menu-option');
+        
+        switch(e.key) {
+            case 'ArrowDown':
+            case 's':
+            case 'S':
+                e.preventDefault();
+                this.currentIndex = (this.currentIndex + 1) % menuButtons.length;
+                this.updateSelection(menuButtons);
+                AudioManager.playNavigationSound();
+                break;
+                
+            case 'ArrowUp':
+            case 'w':
+            case 'W':
+                e.preventDefault();
+                this.currentIndex = (this.currentIndex - 1 + menuButtons.length) % menuButtons.length;
+                this.updateSelection(menuButtons);
+                AudioManager.playNavigationSound();
+                break;
+                
+            case 'Enter':
+            case ' ':
+                e.preventDefault();
+                if (menuButtons[this.currentIndex]) {
+                    menuButtons[this.currentIndex].click();
+                }
+                break;
+                
+            case 'Escape':
+                // Clear keyboard selection
+                menuButtons.forEach(button => {
+                    button.classList.remove('keyboard-selected');
+                });
+                this.keyboardNavigationActive = false;
+                break;
         }
     }
 
-    navigateToPage(page) {
-        this.currentPage = page;
+    updateSelection(menuButtons) {
+        // Remove selection from all buttons
+        menuButtons.forEach(button => {
+            button.classList.remove('keyboard-selected');
+        });
         
-        // Update browser history
-        const newUrl = page === 'home' ? '/' : `#${page}`;
-        if (window.location.hash !== newUrl && newUrl !== '/') {
-            window.history.pushState({ page }, '', newUrl);
-        } else if (newUrl === '/') {
-            window.history.pushState({ page }, '', window.location.pathname);
+        // Add selection to current button
+        if (menuButtons[this.currentIndex]) {
+            menuButtons[this.currentIndex].classList.add('keyboard-selected');
+            this.keyboardNavigationActive = true;
         }
+    }
+
+    firstUpdated() {
+        // Initialize keyboard selection after first render
+        const menuButtons = this.shadowRoot.querySelectorAll('.menu-option');
+        if (menuButtons.length > 0) {
+            this.updateSelection(menuButtons);
+        }
+    }
+
+    toggleMusic() {
+        this.musicIcon = AudioManager.toggleMusic();
+    }
+
+    navigateToPage(page) {
+        // Create lightning effect and play sound for navigation
+        AudioManager.createLightningEffect();
+        AudioManager.playSelectSound();
+        
+        // Navigate after lightning effect
+        setTimeout(() => {
+            this.currentPage = page;
+            
+            // Update browser history
+            const newUrl = page === 'home' ? '/' : `#${page}`;
+            if (window.location.hash !== newUrl && newUrl !== '/') {
+                window.history.pushState({ page }, '', newUrl);
+            } else if (newUrl === '/') {
+                window.history.pushState({ page }, '', window.location.pathname);
+            }
+        }, 600);
     }
 
     renderHomePage() {
@@ -205,6 +308,9 @@ class PortfolioApp extends LitElement {
             <div class="page-content ${this.currentPage !== 'home' ? 'active' : ''}">
                 ${this.currentPage !== 'home' ? this.renderPageContent() : ''}
             </div>
+            <button class="music-toggle" @click="${this.toggleMusic}" title="Toggle Music">
+                ${this.musicIcon}
+            </button>
         `;
     }
 }

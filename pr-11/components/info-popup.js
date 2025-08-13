@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import AudioManager from './audio-manager.js';
 
 // Lit Web Component for info popup
 class InfoPopup extends LitElement {
@@ -106,11 +107,13 @@ class InfoPopup extends LitElement {
 
     toggleInfo() {
         this.isPopupOpen = !this.isPopupOpen;
+        AudioManager.playSelectSound();
         this.requestUpdate();
     }
 
     closeInfo() {
         this.isPopupOpen = false;
+        AudioManager.playNavigationSound();
         this.requestUpdate();
     }
 

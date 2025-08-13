@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import AudioManager from './audio-manager.js';
 
 // Lit Web Component for back button
 class BackButton extends LitElement {
@@ -46,6 +47,9 @@ class BackButton extends LitElement {
     }
 
     handleBackClick(e) {
+        // Play sound effect
+        AudioManager.playSelectSound();
+        
         // Check if we're in a SPA context
         const portfolioApp = document.querySelector('portfolio-app');
         if (portfolioApp) {
